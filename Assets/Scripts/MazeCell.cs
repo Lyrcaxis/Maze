@@ -7,7 +7,7 @@ public class MazeCell {
 	public Vector2Int pos;
 	public WallsRemaining wallsRemaining = WallsRemaining.All;
 	public MazeCell parent;
-	public List<MazeCell> notScannedNeighbors = new List<MazeCell>();
+	public List<Vector2Int> neighbors = new List<Vector2Int>();
 
 	public MazeCell(Vector2Int pos) {
 		this.pos = pos;
@@ -19,5 +19,15 @@ public class MazeCell {
 		else if (fromPos == pos + Vector2Int.up) { wallsRemaining &= ~WallsRemaining.Up; }
 		else if (fromPos == pos + Vector2Int.down) { wallsRemaining &= ~WallsRemaining.Down; }
 		else { throw new UnityException($"Weird wall {fromPos} --> {pos}"); }
+	}
+}
+
+public struct MazePoint {
+	public List<Vector2Int> remainingNeighbors;
+	public Vector2Int pos;
+
+	public MazePoint(Vector2Int pos, List<Vector2Int> remainingNeighbors) {
+		this.pos = pos;
+		this.remainingNeighbors = remainingNeighbors.Copy();
 	}
 }
