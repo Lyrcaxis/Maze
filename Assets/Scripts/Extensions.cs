@@ -13,4 +13,6 @@ static class Extensions {
 		foreach (var item in list) { newList.Add(item); }
 		return newList;
 	}
+
+	public static Vector3 WithZ(this Vector3 v3, float newZ) => new Vector3(v3.x, v3.y, newZ);
 }
