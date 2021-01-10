@@ -14,7 +14,7 @@ public class MazeGenerator : MonoBehaviour {
 
 	void Start() {
 		var cam = Camera.main;
-		cam.orthographicSize = gridSize / 2f;
+		cam.orthographicSize = gridSize / 2f + 0.1f;
 		cam.transform.position = new Vector3(gridSize / 2f, gridSize / 2f - 0.5f, -10f);
 
 		foreach (var wall in walls) { GameObject.DestroyImmediate(wall); }
@@ -29,7 +29,7 @@ public class MazeGenerator : MonoBehaviour {
 		}
 
 		foreach (var c in cells) {
-			c.neighbors = new Vector2Int?[4];
+			c.neighbors = new Vector2Int[4];
 			var pos = c.pos;
 			if (pos.x > 0) { c.neighbors[0] = (new Vector2Int(pos.x - 1, pos.y)); }
 			if (pos.x < gridSize - 1) { c.neighbors[1] = (new Vector2Int(pos.x + 1, pos.y)); }
@@ -190,9 +190,13 @@ public class MazeGenerator : MonoBehaviour {
 		foreach (var c in unconnectedCells) {
 			checkingPoint = new MazePoint(c.pos);
 
-			IterateNeighbors(checkingPoint, out var nb);
-			nb.KnockdownWall(checkingPoint.pos);
-			cells[checkingPoint.pos.x, checkingPoint.pos.y].KnockdownWall(nb.pos);
+			while (true) {
+				IterateNeighbors(checkingPoint, out var nb);
+				nb.KnockdownWall(checkingPoint.pos);
+				cells[checkingPoint.pos.x, checkingPoint.pos.y].KnockdownWall(nb.pos);
+				checkingPoint = new MazePoint(nb.pos);
+				if (nb.hasBeenVisited) { break; }
+			}
 		}
 
 
@@ -363,20 +367,16 @@ public class MazeGenerator : MonoBehaviour {
 			Vector2Int pos;
 			switch (dir) {
 				case GridDir.Left:
-					if (cell.neighbors[0].HasValue) { pos = cell.neighbors[2].Value; }
-					else { return null; }
+					pos = cell.neighbors[0];
 					break;
 				case GridDir.Right:
-					if (cell.neighbors[1].HasValue) { pos = cell.neighbors[2].Value; }
-					else { return null; }
+					pos = cell.neighbors[1];
 					break;
 				case GridDir.Up:
-					if (cell.neighbors[2].HasValue) { pos = cell.neighbors[2].Value; }
-					else { return null; }
+					pos = cell.neighbors[2];
 					break;
 				case GridDir.Down:
-					if (cell.neighbors[3].HasValue) { pos = cell.neighbors[2].Value; }
-					else { return null; }
+					pos = cell.neighbors[3];
 					break;
 				default:
 					return null;

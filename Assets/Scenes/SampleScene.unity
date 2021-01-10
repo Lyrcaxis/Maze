@@ -250,3 +250,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridSize: 10
+  visualize: 0
+  wallPrefab: {fileID: 7159687832323852989, guid: 8825152947a86d94289e03ae564bef8e, type: 3}

@@ -5,7 +5,7 @@ using UnityEngine;
 public class MazeCell {
 	public bool hasBeenVisited;
 	public Vector2Int pos;
-	public Vector2Int?[] neighbors;
+	public Vector2Int[] neighbors;
 	public GridDir wallsRemaining = GridDir.All;
 	public GridDir uncheckedDirs;
 
@@ -19,7 +19,7 @@ public class MazeCell {
 		else if (fromPos == pos + Vector2Int.left) { wallsRemaining &= ~GridDir.Left; }
 		else if (fromPos == pos + Vector2Int.up) { wallsRemaining &= ~GridDir.Up; }
 		else if (fromPos == pos + Vector2Int.down) { wallsRemaining &= ~GridDir.Down; }
-		else { throw new UnityException($"Weird wall {fromPos} --> {pos}"); }
+		else { Debug.LogWarning($"Weird wall {fromPos} --> {pos}"); }
 	}
 }
 
