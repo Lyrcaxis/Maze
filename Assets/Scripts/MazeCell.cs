@@ -14,21 +14,18 @@ public class MazeCell {
 		this.uncheckedDirs = GridDir.All;
 	}
 
-	public void KnockdownWall(Vector2Int fromPos) {
-		if (fromPos == pos + Vector2Int.right) { wallsRemaining &= ~GridDir.Right; }
-		else if (fromPos == pos + Vector2Int.left) { wallsRemaining &= ~GridDir.Left; }
-		else if (fromPos == pos + Vector2Int.up) { wallsRemaining &= ~GridDir.Up; }
-		else if (fromPos == pos + Vector2Int.down) { wallsRemaining &= ~GridDir.Down; }
-		else { Debug.LogWarning($"Weird wall {fromPos} --> {pos}"); }
+	public bool KnockdownWall(Vector2Int fromPos) {
+		var prevWalls = wallsRemaining;
+		wallsRemaining &= ~DirFromPos(fromPos);
+		return prevWalls == wallsRemaining;
 	}
-}
 
-public class MazePoint {
-	public Vector2Int pos;
-	public GridDir uncheckedDirs;
-
-	public MazePoint(Vector2Int pos) {
-		this.pos = pos;
-		this.uncheckedDirs = GridDir.All;
+	public GridDir DirFromPos(Vector2Int fromPos) {
+		if (fromPos == pos + Vector2Int.right) { return GridDir.Right; }
+		else if (fromPos == pos + Vector2Int.left) { return GridDir.Left; }
+		else if (fromPos == pos + Vector2Int.up) { return GridDir.Up; }
+		else if (fromPos == pos + Vector2Int.down) { return GridDir.Down; }
+		else { Debug.LogWarning($"Weird wall connection {fromPos} --> {pos}"); }
+		return GridDir.None;
 	}
 }
