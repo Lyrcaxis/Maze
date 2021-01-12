@@ -27,6 +27,9 @@ public class MazeGenerator : MonoBehaviour {
 			}
 		}
 
+		// Cache neighbors
+		foreach (var c in cells) { c.neighbors = GetShuffledNeighbors(c); }
+
 		// Generate maze
 		VisitNeighbors(cells[0, 0]);
 
@@ -37,12 +40,16 @@ public class MazeGenerator : MonoBehaviour {
 		if (Random.Range(0, 2) == 1) { cells[gridSize - 1, gridSize - 1].wallsRemaining &= ~GridDir.Right; }
 		else { cells[gridSize - 1, gridSize - 1].wallsRemaining &= ~GridDir.Up; }
 
+		// Render maze
 		CreatePath();
+
+		// Free memory from neighbors
+		foreach (var c in cells) { c.neighbors = null; }
 
 		void VisitNeighbors(MazeCell cell) {
 			cell.hasBeenVisited = true;
 
-			var nbs = GetShuffledNeighbors(cell);
+			var nbs = cell.neighbors;
 
 			foreach (var nb in nbs) {
 				if (!nb.hasBeenVisited) {
@@ -55,7 +62,7 @@ public class MazeGenerator : MonoBehaviour {
 
 		List<MazeCell> GetShuffledNeighbors(MazeCell cell) {
 			var pos = cell.pos;
-			var neighbors = new List<MazeCell>(4);
+			var neighbors = new List<MazeCell>();
 
 			if (pos.x > 0) { neighbors.Add(cells[pos.x - 1, pos.y]); }
 			if (pos.x < gridSize - 1) { neighbors.Add(cells[pos.x + 1, pos.y]); }

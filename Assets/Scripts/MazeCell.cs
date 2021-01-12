@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+
+using UnityEngine;
 
 public class MazeCell {
 	public bool hasBeenVisited;
 	public Vector2Int pos;
 	public GridDir wallsRemaining = GridDir.All;
+	public List<MazeCell> neighbors;
 
 	public MazeCell(Vector2Int pos) {
 		this.pos = pos;
