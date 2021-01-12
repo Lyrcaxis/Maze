@@ -11,7 +11,14 @@ public class MazeCell {
 
 	public MazeCell(Vector2Int pos) {
 		this.pos = pos;
-		this.uncheckedDirs = GridDir.All;
+		uncheckedDirs = GridDir.All;
+	}
+
+	public MazeCell withResettedUncheckedDirs {
+		get {
+			uncheckedDirs = GridDir.All;
+			return this;
+		}
 	}
 
 	public bool KnockdownWall(Vector2Int fromPos) {

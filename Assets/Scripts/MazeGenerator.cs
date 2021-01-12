@@ -89,19 +89,18 @@ public class MazeGenerator : MonoBehaviour {
 	IEnumerator GenerateCorrectPath(MazeCell startCell, MazeCell endCell, System.Action Callback) {
 		sw.Start();
 
-		List<MazePoint> mazePath = new List<MazePoint>();
+		List<MazeCell> mazePath = new List<MazeCell>();
 
-		mazePath.Add(new MazePoint(startCell.pos));
+		mazePath.Add(startCell.withResettedUncheckedDirs);
 
 		Vector2Int checkPos = mazePath[0].pos;
-		MazePoint checkingPoint = mazePath[0];
+		MazeCell checkingPoint = mazePath[0];
 
 		while (checkingPoint.pos != endCell.pos) {
 			if (visualize) {
 				yield return null;
 
-				correctPath.Clear();
-				foreach (var c in mazePath) { correctPath.Add(cells[c.pos.x, c.pos.y]); }
+				correctPath = mazePath;
 			}
 			VisualizationCheck();
 
@@ -117,17 +116,14 @@ public class MazeGenerator : MonoBehaviour {
 				if (nb.pos.y == gridSize - 1 && nb.pos.x < checkingPoint.pos.x) { continue; }
 				if (nb.pos.x == 0 && nb.pos.y < checkingPoint.pos.y) { continue; }
 				if (nb.pos.y == 0 && nb.pos.x < checkingPoint.pos.x) { continue; }
-				mazePath.Add(new MazePoint(nbPos));
+				mazePath.Add(cells[nbPos.x, nbPos.y]);
 			}
 			checkingPoint = mazePath.Last();
 		}
 
-		correctPath.Clear();
-		foreach (var c in mazePath) {
-			var cell = cells[c.pos.x, c.pos.y];
-			correctPath.Add(cell);
-			cell.hasBeenVisited = true;
-		}
+		correctPath = mazePath;
+		foreach (var c in correctPath) { c.hasBeenVisited = true; }
+
 		for (int i = 1; i < correctPath.Count; i++) {
 			correctPath[i].KnockdownWall(correctPath[i - 1].pos);
 			correctPath[i - 1].KnockdownWall(correctPath[i].pos);
@@ -141,26 +137,25 @@ public class MazeGenerator : MonoBehaviour {
 		var visitedPoints = correctPath.Count;
 		var totalPoints = cells.Length;
 		var pathCopied = correctPath.Copy();
-		List<MazePoint> uncheckedPoints = new List<MazePoint>();
+		List<MazeCell> uncheckedPoints = new List<MazeCell>();
 
-		MazePoint checkingPoint = null;
+		MazeCell checkingPoint = null;
 		while (true) {
 			if (pathCopied.Count != 0) {
 				var rndStart = pathCopied.GetRandom();
-				checkingPoint = new MazePoint(rndStart.pos);
+				checkingPoint = rndStart.withResettedUncheckedDirs;
 				pathCopied.Remove(rndStart);
 			}
 			else if (uncheckedPoints.Count != 0) {
 				var rndStart = uncheckedPoints.GetRandom();
-				checkingPoint = new MazePoint(rndStart.pos);
+				checkingPoint = rndStart.withResettedUncheckedDirs;
 			}
 			else {
 				Debug.Log("Reaching final point");
 				break;
 			}
 
-			var mazeCell = cells[checkingPoint.pos.x, checkingPoint.pos.y];
-			mazeCell.hasBeenVisited = true;
+			checkingPoint.hasBeenVisited = true;
 
 			while (true) {
 				if (visualize) { yield return null; }
@@ -171,8 +166,8 @@ public class MazeGenerator : MonoBehaviour {
 				if (nb == null) { break; }
 				if (nb.hasBeenVisited) { continue; }
 
-				mazeCell.KnockdownWall(nb.pos);
-				nb.KnockdownWall(mazeCell.pos);
+				checkingPoint.KnockdownWall(nb.pos);
+				nb.KnockdownWall(checkingPoint.pos);
 				nb.hasBeenVisited = true;
 
 				if (checkingPoint.uncheckedDirs != GridDir.None) {
@@ -182,8 +177,7 @@ public class MazeGenerator : MonoBehaviour {
 				}
 				else { uncheckedPoints.Remove(checkingPoint); }
 
-				checkingPoint = new MazePoint(nb.pos);
-				mazeCell = cells[checkingPoint.pos.x, checkingPoint.pos.y];
+				checkingPoint = nb.withResettedUncheckedDirs;
 
 				if (!visualize && sw.ElapsedMilliseconds > 5000) {
 					Debug.Log("Slow loading detected.");
@@ -198,25 +192,23 @@ public class MazeGenerator : MonoBehaviour {
 		List<MazeCell> unconnectedCells = new List<MazeCell>();
 		foreach (var c in cells) { if (!c.hasBeenVisited) { unconnectedCells.Add(c); } }
 		foreach (var c in unconnectedCells) {
-			checkingPoint = new MazePoint(c.pos);
+			checkingPoint = c.withResettedUncheckedDirs;
 			c.hasBeenVisited = true;
 
 			while (true) {
 				if (visualize) { yield return null; }
 				VisualizationCheck();
 
-				var checkingCell = cells[checkingPoint.pos.x, checkingPoint.pos.y];
-
 				IterateNeighbors(checkingPoint, out var nb);
 
 				if (nb == invalidCell) { continue; }
 				if (nb == null) { break; }
-				int wallsRemaining = Extensions.NumberOfSetBits((int) checkingCell.wallsRemaining);
-				if (Extensions.NumberOfSetBits((int) nb.wallsRemaining) <= 2 && checkingCell.wallsRemaining != GridDir.All) { continue; }
+				int wallsRemaining = Extensions.NumberOfSetBits((int) checkingPoint.wallsRemaining);
+				if (Extensions.NumberOfSetBits((int) nb.wallsRemaining) <= 2 && checkingPoint.wallsRemaining != GridDir.All) { continue; }
 
 				nb.KnockdownWall(checkingPoint.pos);
-				checkingCell.KnockdownWall(nb.pos);
-				checkingPoint = new MazePoint(nb.pos);
+				checkingPoint.KnockdownWall(nb.pos);
+				checkingPoint = nb.withResettedUncheckedDirs;
 				if (nb.hasBeenVisited) { break; }
 				nb.hasBeenVisited = true;
 			}
@@ -225,7 +217,7 @@ public class MazeGenerator : MonoBehaviour {
 		Callback?.Invoke();
 	}
 
-	void IterateNeighbors(MazePoint currentCell, out MazeCell nb) {
+	void IterateNeighbors(MazeCell currentCell, out MazeCell nb) {
 		nb = null;
 		// really sorry about this.. testing optimizations
 		try {
