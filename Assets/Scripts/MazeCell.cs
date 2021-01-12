@@ -1,24 +1,12 @@
-﻿using System.Collections.Generic;
-
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MazeCell {
 	public bool hasBeenVisited;
 	public Vector2Int pos;
-	public Vector2Int[] neighbors;
 	public GridDir wallsRemaining = GridDir.All;
-	public GridDir uncheckedDirs;
 
 	public MazeCell(Vector2Int pos) {
 		this.pos = pos;
-		uncheckedDirs = GridDir.All;
-	}
-
-	public MazeCell withResettedUncheckedDirs {
-		get {
-			uncheckedDirs = GridDir.All;
-			return this;
-		}
 	}
 
 	public bool KnockdownWall(Vector2Int fromPos) {

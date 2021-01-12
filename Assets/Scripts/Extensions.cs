@@ -3,22 +3,14 @@
 using UnityEngine;
 
 static class Extensions {
-	public static T GetRandom<T>(this IList<T> list) => list[Random.Range(0, list.Count)];
-	public static List<T> WithoutElement<T>(this List<T> list, T removedElement) {
-		list.Remove(removedElement);
-		return list;
-	}
-	public static List<T> Copy<T>(this List<T> list) {
-		var newList = new List<T>(list.Count);
-		foreach (var item in list) { newList.Add(item); }
-		return newList;
-	}
-
-	public static Vector3 WithZ(this Vector3 v3, float newZ) => new Vector3(v3.x, v3.y, newZ);
-
-	public static int NumberOfSetBits(int i) {
-		i = i - ((i >> 1) & 0x55555555);
-		i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
-		return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+	public static void Shuffle<T>(this IList<T> list) {
+		int n = list.Count;
+		while (n > 1) {
+			n--;
+			int k = Random.Range(0, n + 1);
+			T value = list[k];
+			list[k] = list[n];
+			list[n] = value;
+		}
 	}
 }
