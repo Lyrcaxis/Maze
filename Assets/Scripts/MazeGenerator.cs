@@ -72,6 +72,7 @@ public class MazeGenerator : MonoBehaviour {
 		}
 		void OnMazeCompletelyLoaded() {
 			Debug.Log("Maze completely generated");
+			visualize = false;
 			CreatePath();
 		}
 	}
@@ -430,7 +431,8 @@ public class MazeGenerator : MonoBehaviour {
 	}
 
 	void OnDrawGizmos() {
-		if (cells == null) { return; }
+		if (cells == null || !visualize) { return; }
+
 		Vector3 size = Vector3.one * 0.25f;
 
 		foreach (var cell in cells) {
