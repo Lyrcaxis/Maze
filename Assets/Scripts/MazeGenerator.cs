@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class MazeGenerator : MonoBehaviour {
 	[SerializeField] int gridSize = default;
-	[SerializeField] bool visualize = default;
 	[SerializeField] GameObject wallPrefab = default;
 
+	public bool visualize;
 	public MazeCell[,] cells { get; set; }
 	List<MazeCell> correctPath = new List<MazeCell>();
 
@@ -17,6 +17,7 @@ public class MazeGenerator : MonoBehaviour {
 	MazeCell invalidCell = new MazeCell(new Vector2Int(-1, -1));
 	List<GameObject> walls = new List<GameObject>();
 
+	public static System.Action OnMazeGenerated;
 
 	void Start() {
 		var cam = Camera.main;
@@ -73,6 +74,7 @@ public class MazeGenerator : MonoBehaviour {
 		void OnMazeCompletelyLoaded() {
 			Debug.Log("Maze completely generated");
 			visualize = false;
+			OnMazeGenerated?.Invoke();
 			CreatePath();
 		}
 	}
@@ -171,7 +173,7 @@ public class MazeGenerator : MonoBehaviour {
 				nb.KnockdownWall(checkingPoint.pos);
 				nb.hasBeenVisited = true;
 
-				if (checkingPoint.uncheckedDirs != GridDir.None) {
+				if (checkingPoint.uncheckedDirsTemp != GridDir.None) {
 					if (uncheckedPoints.Contains(checkingPoint)) {
 						uncheckedPoints.Add(checkingPoint);
 					}
@@ -220,169 +222,141 @@ public class MazeGenerator : MonoBehaviour {
 
 	void IterateNeighbors(MazeCell currentCell, out MazeCell nb) {
 		nb = null;
-		// really sorry about this.. testing optimizations
-		try {
-			switch (currentCell.uncheckedDirs) {
-				case GridDir.None:
-					break;
-				case GridDir.Left:
-				case GridDir.Right:
-				case GridDir.Up:
-				case GridDir.Down:
-					nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], currentCell.uncheckedDirs);
-					currentCell.uncheckedDirs = GridDir.None;
-					break;
-				case GridDir.All:
-					var dir = (GridDir) (1 << Random.Range(0, 4));
-					nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], dir);
-					currentCell.uncheckedDirs &= ~dir;
-					break;
-				case GridDir.Down | GridDir.Left:
-					switch (Random.Range(0, 2)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Left);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Down);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-					}
-					break;
-				case GridDir.Up | GridDir.Left:
-					switch (Random.Range(0, 2)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Left);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Up);
-							currentCell.uncheckedDirs &= ~GridDir.Up;
-							break;
-					}
-					break;
-				case GridDir.Down | GridDir.Right:
-					switch (Random.Range(0, 2)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Right);
-							currentCell.uncheckedDirs &= ~GridDir.Right;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Down);
-							currentCell.uncheckedDirs &= ~GridDir.Down;
-							break;
-					}
-					break;
-				case GridDir.Up | GridDir.Right:
-					switch (Random.Range(0, 2)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Right);
-							currentCell.uncheckedDirs &= ~GridDir.Right;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Up);
-							currentCell.uncheckedDirs &= ~GridDir.Up;
-							break;
-					}
-					break;
-				case GridDir.Left | GridDir.Right:
-					switch (Random.Range(0, 2)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Left);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Right);
-							currentCell.uncheckedDirs &= ~GridDir.Right;
-							break;
-					}
-					break;
-				case GridDir.Up | GridDir.Down:
-					switch (Random.Range(0, 2)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Down);
-							currentCell.uncheckedDirs &= ~GridDir.Down;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Up);
-							currentCell.uncheckedDirs &= ~GridDir.Up;
-							break;
-					}
-					break;
-				case GridDir.Left | GridDir.Up | GridDir.Right:
-					switch (Random.Range(0, 3)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Left);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-						case 1:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Right);
-							currentCell.uncheckedDirs &= ~GridDir.Right;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Up);
-							currentCell.uncheckedDirs &= ~GridDir.Up;
-							break;
-					}
-					break;
-				case GridDir.Left | GridDir.Down | GridDir.Right:
-					switch (Random.Range(0, 3)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Left);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-						case 1:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Right);
-							currentCell.uncheckedDirs &= ~GridDir.Right;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Down);
-							currentCell.uncheckedDirs &= ~GridDir.Down;
-							break;
-					}
-					break;
-				case GridDir.Left | GridDir.Up | GridDir.Down:
-					switch (Random.Range(0, 3)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Left);
-							currentCell.uncheckedDirs &= ~GridDir.Left;
-							break;
-						case 1:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Down);
-							currentCell.uncheckedDirs &= ~GridDir.Down;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Up);
-							currentCell.uncheckedDirs &= ~GridDir.Up;
-							break;
-					}
-					break;
-				case GridDir.Down | GridDir.Up | GridDir.Right:
-					switch (Random.Range(0, 3)) {
-						case 0:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Down);
-							currentCell.uncheckedDirs &= ~GridDir.Down;
-							break;
-						case 1:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Right);
-							currentCell.uncheckedDirs &= ~GridDir.Right;
-							break;
-						default:
-							nb = GetNeighbor(cells[currentCell.pos.x, currentCell.pos.y], GridDir.Up);
-							currentCell.uncheckedDirs &= ~GridDir.Up;
-							break;
-					}
-					break;
-				default:
-					Debug.Log("FAILED AT:" + currentCell.uncheckedDirs);
-					break;
-			}
-		}
-		catch { Debug.Log(currentCell.pos); }
 
+		// really sorry about this.. testing optimizations
+		switch (currentCell.uncheckedDirsTemp) {
+			case GridDir.None:
+				break;
+			case GridDir.Left:
+			case GridDir.Right:
+			case GridDir.Up:
+			case GridDir.Down:
+				nb = GetNeighbor(currentCell, currentCell.uncheckedDirsTemp);
+				break;
+			case GridDir.All:
+				var dir = (GridDir) (1 << Random.Range(0, 4));
+				nb = GetNeighbor(currentCell, dir);
+				break;
+			case GridDir.Down | GridDir.Left:
+				switch (Random.Range(0, 2)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Left);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Down);
+						break;
+				}
+				break;
+			case GridDir.Up | GridDir.Left:
+				switch (Random.Range(0, 2)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Left);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Up);
+						break;
+				}
+				break;
+			case GridDir.Down | GridDir.Right:
+				switch (Random.Range(0, 2)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Right);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Down);
+						break;
+				}
+				break;
+			case GridDir.Up | GridDir.Right:
+				switch (Random.Range(0, 2)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Right);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Up);
+						break;
+				}
+				break;
+			case GridDir.Left | GridDir.Right:
+				switch (Random.Range(0, 2)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Left);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Right);
+						break;
+				}
+				break;
+			case GridDir.Up | GridDir.Down:
+				switch (Random.Range(0, 2)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Down);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Up);
+						break;
+				}
+				break;
+			case GridDir.Left | GridDir.Up | GridDir.Right:
+				switch (Random.Range(0, 3)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Left);
+						break;
+					case 1:
+						nb = GetNeighbor(currentCell, GridDir.Right);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Up);
+						break;
+				}
+				break;
+			case GridDir.Left | GridDir.Down | GridDir.Right:
+				switch (Random.Range(0, 3)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Left);
+						break;
+					case 1:
+						nb = GetNeighbor(currentCell, GridDir.Right);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Down);
+						break;
+				}
+				break;
+			case GridDir.Left | GridDir.Up | GridDir.Down:
+				switch (Random.Range(0, 3)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Left);
+						break;
+					case 1:
+						nb = GetNeighbor(currentCell, GridDir.Down);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Up);
+						break;
+				}
+				break;
+			case GridDir.Down | GridDir.Up | GridDir.Right:
+				switch (Random.Range(0, 3)) {
+					case 0:
+						nb = GetNeighbor(currentCell, GridDir.Down);
+						break;
+					case 1:
+						nb = GetNeighbor(currentCell, GridDir.Right);
+						break;
+					default:
+						nb = GetNeighbor(currentCell, GridDir.Up);
+						break;
+				}
+				break;
+			default:
+				Debug.LogError("FAILED AT:" + currentCell.uncheckedDirsTemp);
+				break;
+		}
 
 		MazeCell GetNeighbor(MazeCell cell, GridDir dir) {
 			Vector2Int pos;
+
 			switch (dir) {
 				case GridDir.Left:
 					pos = cell.neighbors[0];
@@ -399,6 +373,8 @@ public class MazeGenerator : MonoBehaviour {
 				default:
 					return null;
 			}
+
+			cell.uncheckedDirsTemp &= ~dir;
 
 			if (pos.x < 0) { return invalidCell; }
 			return cells[pos.x, pos.y];
