@@ -7,6 +7,7 @@ public class PathfinderObject : MonoBehaviour {
 	List<MazeCell> path;
 
 	void Awake() {
+		MazeGenerator.OnGenerationRequested += () => path = null;
 		MazeGenerator.OnMazeGenerated += () => {
 			transform.position = Vector2.zero;
 			path = null;

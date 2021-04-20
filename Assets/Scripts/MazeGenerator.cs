@@ -15,9 +15,14 @@ public class MazeGenerator : MonoBehaviour {
 
 	MazeCell invalidCell = new MazeCell(new Vector2Int(-1, -1));
 
+	public static System.Action OnGenerationRequested;
 	public static System.Action OnMazeGenerated;
 
-	void Start() {
+	void Start() => GenerateMaze();
+
+	void GenerateMaze() {
+		OnGenerationRequested?.Invoke();
+
 		var cam = Camera.main;
 		cam.orthographicSize = gridSize / 2f + 0.1f;
 		cam.transform.position = new Vector3(gridSize / 2f, gridSize / 2f - 0.5f, -10f);
@@ -94,7 +99,7 @@ public class MazeGenerator : MonoBehaviour {
 	void Update() {
 		if (Input.GetMouseButtonDown(1)) {
 			StopAllCoroutines();
-			Start();
+			GenerateMaze();
 		}
 		if (Input.GetMouseButtonDown(0)) {
 			visualize = false;
@@ -113,9 +118,8 @@ public class MazeGenerator : MonoBehaviour {
 
 		while (checkingPoint.pos != endCell.pos) {
 			if (visualize) {
-				yield return null;
-
 				correctPath = mazePath;
+				yield return null; // Let the gizmos render
 			}
 			VisualizationCheck();
 
@@ -236,7 +240,6 @@ public class MazeGenerator : MonoBehaviour {
 		nb = GetRandomNeighbor();
 
 		// really sorry about this.. testing optimizations
-
 		MazeCell GetRandomNeighbor() {
 			switch (currentCell.uncheckedDirsTemp) {
 				case GridDir.None: { return null; }
