@@ -221,163 +221,94 @@ public class MazeGenerator : MonoBehaviour {
 	}
 
 	void IterateNeighbors(MazeCell currentCell, out MazeCell nb) {
-		nb = null;
+		nb = GetRandomNeighbor();
 
 		// really sorry about this.. testing optimizations
-		switch (currentCell.uncheckedDirsTemp) {
-			case GridDir.None:
-				break;
-			case GridDir.Left:
-			case GridDir.Right:
-			case GridDir.Up:
-			case GridDir.Down:
-				nb = GetNeighbor(currentCell, currentCell.uncheckedDirsTemp);
-				break;
-			case GridDir.All:
-				var dir = (GridDir) (1 << Random.Range(0, 4));
-				nb = GetNeighbor(currentCell, dir);
-				break;
-			case GridDir.Down | GridDir.Left:
-				switch (Random.Range(0, 2)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Left);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Down);
-						break;
-				}
-				break;
-			case GridDir.Up | GridDir.Left:
-				switch (Random.Range(0, 2)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Left);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Up);
-						break;
-				}
-				break;
-			case GridDir.Down | GridDir.Right:
-				switch (Random.Range(0, 2)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Right);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Down);
-						break;
-				}
-				break;
-			case GridDir.Up | GridDir.Right:
-				switch (Random.Range(0, 2)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Right);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Up);
-						break;
-				}
-				break;
-			case GridDir.Left | GridDir.Right:
-				switch (Random.Range(0, 2)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Left);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Right);
-						break;
-				}
-				break;
-			case GridDir.Up | GridDir.Down:
-				switch (Random.Range(0, 2)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Down);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Up);
-						break;
-				}
-				break;
-			case GridDir.Left | GridDir.Up | GridDir.Right:
-				switch (Random.Range(0, 3)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Left);
-						break;
-					case 1:
-						nb = GetNeighbor(currentCell, GridDir.Right);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Up);
-						break;
-				}
-				break;
-			case GridDir.Left | GridDir.Down | GridDir.Right:
-				switch (Random.Range(0, 3)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Left);
-						break;
-					case 1:
-						nb = GetNeighbor(currentCell, GridDir.Right);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Down);
-						break;
-				}
-				break;
-			case GridDir.Left | GridDir.Up | GridDir.Down:
-				switch (Random.Range(0, 3)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Left);
-						break;
-					case 1:
-						nb = GetNeighbor(currentCell, GridDir.Down);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Up);
-						break;
-				}
-				break;
-			case GridDir.Down | GridDir.Up | GridDir.Right:
-				switch (Random.Range(0, 3)) {
-					case 0:
-						nb = GetNeighbor(currentCell, GridDir.Down);
-						break;
-					case 1:
-						nb = GetNeighbor(currentCell, GridDir.Right);
-						break;
-					default:
-						nb = GetNeighbor(currentCell, GridDir.Up);
-						break;
-				}
-				break;
-			default:
-				Debug.LogError("FAILED AT:" + currentCell.uncheckedDirsTemp);
-				break;
-		}
 
-		MazeCell GetNeighbor(MazeCell cell, GridDir dir) {
-			Vector2Int pos;
-
-			switch (dir) {
+		MazeCell GetRandomNeighbor() {
+			switch (currentCell.uncheckedDirsTemp) {
+				case GridDir.None: { return null; }
 				case GridDir.Left:
-					pos = cell.neighbors[0];
-					break;
 				case GridDir.Right:
-					pos = cell.neighbors[1];
-					break;
 				case GridDir.Up:
-					pos = cell.neighbors[2];
-					break;
-				case GridDir.Down:
-					pos = cell.neighbors[3];
-					break;
-				default:
+				case GridDir.Down: { return GetNeighbor(currentCell, currentCell.uncheckedDirsTemp); }
+				case GridDir.All: { return GetNeighbor(currentCell, (GridDir) (1 << Random.Range(0, 4))); }
+				case GridDir.Down | GridDir.Left:
+					switch (Random.Range(0, 2)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Left); }
+						default: { return GetNeighbor(currentCell, GridDir.Down); }
+					}
+				case GridDir.Up | GridDir.Left:
+					switch (Random.Range(0, 2)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Left); }
+						default: { return GetNeighbor(currentCell, GridDir.Up); }
+					}
+				case GridDir.Down | GridDir.Right:
+					switch (Random.Range(0, 2)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Right); }
+						default: { return GetNeighbor(currentCell, GridDir.Down); }
+					}
+				case GridDir.Up | GridDir.Right:
+					switch (Random.Range(0, 2)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Right); }
+						default: { return GetNeighbor(currentCell, GridDir.Up); }
+					}
+				case GridDir.Left | GridDir.Right:
+					switch (Random.Range(0, 2)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Left); }
+						default: { return GetNeighbor(currentCell, GridDir.Right); }
+					}
+				case GridDir.Up | GridDir.Down:
+					switch (Random.Range(0, 2)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Down); }
+						default: { return GetNeighbor(currentCell, GridDir.Up); }
+					}
+				case GridDir.Left | GridDir.Up | GridDir.Right:
+					switch (Random.Range(0, 3)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Left); }
+						case 1: { return GetNeighbor(currentCell, GridDir.Right); }
+						default: { return GetNeighbor(currentCell, GridDir.Up); }
+					}
+				case GridDir.Left | GridDir.Down | GridDir.Right:
+					switch (Random.Range(0, 3)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Left); }
+						case 1: { return GetNeighbor(currentCell, GridDir.Right); }
+						default: { return GetNeighbor(currentCell, GridDir.Down); }
+					}
+				case GridDir.Left | GridDir.Up | GridDir.Down:
+					switch (Random.Range(0, 3)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Left); }
+						case 1: { return GetNeighbor(currentCell, GridDir.Down); }
+						default: { return GetNeighbor(currentCell, GridDir.Up); }
+					}
+				case GridDir.Down | GridDir.Up | GridDir.Right:
+					switch (Random.Range(0, 3)) {
+						case 0: { return GetNeighbor(currentCell, GridDir.Down); }
+						case 1: { return GetNeighbor(currentCell, GridDir.Right); }
+						default: { return GetNeighbor(currentCell, GridDir.Up); }
+					}
+				default: {
+					Debug.LogError("FAILED AT:" + currentCell.uncheckedDirsTemp);
 					return null;
+				}
 			}
-
+		}
+		MazeCell GetNeighbor(MazeCell cell, GridDir dir) {
+			Vector2Int pos = GetPos();
 			cell.uncheckedDirsTemp &= ~dir;
 
 			if (pos.x < 0) { return invalidCell; }
 			return cells[pos.x, pos.y];
+
+			Vector2Int GetPos() {
+				switch (dir) {
+					case GridDir.Left: { return cell.neighbors[0]; }
+					case GridDir.Right: { return cell.neighbors[1]; }
+					case GridDir.Up: { return cell.neighbors[2]; }
+					case GridDir.Down: { return cell.neighbors[3]; }
+					default: { return Vector2Int.one * -1; }
+				}
+			}
 		}
 	}
 
@@ -424,11 +355,13 @@ public class MazeGenerator : MonoBehaviour {
 			if (cell.wallsRemaining.HasFlag(GridDir.Down)) { Gizmos.DrawWireCube(cell.pos + Vector2.down * 0.25f, size); }
 		}
 
+		// Draw correct path
 		Gizmos.color = Color.green;
 		foreach (var cell in correctPath) {
 			Gizmos.DrawCube(new Vector3(cell.pos.x, cell.pos.y), Vector3.one * 0.25f);
 		}
 
+		// Draw lines that connect correct path
 		Gizmos.color = Color.red;
 		for (int i = 1; i < correctPath.Count; i++) {
 			Gizmos.DrawLine((Vector2) correctPath[i - 1].pos, (Vector2) correctPath[i].pos);
