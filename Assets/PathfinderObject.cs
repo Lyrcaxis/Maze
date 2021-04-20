@@ -28,12 +28,23 @@ public class PathfinderObject : MonoBehaviour {
 	void OnDrawGizmos() {
 		if (path == null || path.Count == 0) { return; }
 
-		Gizmos.color = Color.yellow;
+		Color startColor = Color.red;
+		Color midColor = Color.yellow;
+		Color endColor = Color.blue;
+
 		for (int i = 1; i < path.Count; i++) {
+			Gizmos.color = GetColor(i);
 			Gizmos.DrawLine((Vector2) path[i].pos, (Vector2) path[i - 1].pos);
 		}
 
 		Gizmos.color = Color.green;
 		Gizmos.DrawWireSphere((Vector2) path[0].pos, 0.25f);
+
+		Color GetColor(int i) {
+			var t = 1 - (i / (float) path.Count);
+
+			if (t < 0.5f) { return Color.Lerp(startColor, midColor, 2 * t); }
+			else { return Color.Lerp(midColor, endColor, 2 * (t - 0.5f)); }
+		}
 	}
 }

@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class MazeGenerator : MonoBehaviour {
 	[SerializeField] int gridSize = default;
-	[SerializeField] GameObject wallPrefab = default;
 
 	public bool visualize;
 	public MazeCell[,] cells { get; set; }
@@ -15,7 +14,6 @@ public class MazeGenerator : MonoBehaviour {
 	System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
 	MazeCell invalidCell = new MazeCell(new Vector2Int(-1, -1));
-	List<GameObject> walls = new List<GameObject>();
 
 	public static System.Action OnMazeGenerated;
 
@@ -24,7 +22,7 @@ public class MazeGenerator : MonoBehaviour {
 		cam.orthographicSize = gridSize / 2f + 0.1f;
 		cam.transform.position = new Vector3(gridSize / 2f, gridSize / 2f - 0.5f, -10f);
 
-		foreach (var wall in walls) { GameObject.DestroyImmediate(wall); }
+		WallsRenderer.Clear();
 
 		// Initialize grid
 		cells = new MazeCell[gridSize, gridSize];
@@ -76,6 +74,20 @@ public class MazeGenerator : MonoBehaviour {
 			visualize = false;
 			OnMazeGenerated?.Invoke();
 			CreatePath();
+		}
+		void CreatePath() {
+			List<Matrix4x4> matrices = new List<Matrix4x4>(cells.Length);
+
+			foreach (var cell in cells) {
+				if (cell.wallsRemaining.HasFlag(GridDir.Left)) { CreateWall(cell.pos + Vector2.left * 0.5f, 90); }
+				if (cell.wallsRemaining.HasFlag(GridDir.Right)) { CreateWall(cell.pos + Vector2.right * 0.5f, 90); }
+				if (cell.wallsRemaining.HasFlag(GridDir.Up)) { CreateWall(cell.pos + Vector2.up * 0.5f, 0); }
+				if (cell.wallsRemaining.HasFlag(GridDir.Down)) { CreateWall(cell.pos + Vector2.down * 0.5f, 0); }
+			}
+
+			WallsRenderer.Init(matrices);
+
+			void CreateWall(Vector3 pos, float rotZ) => matrices.Add(Matrix4x4.TRS(pos, Quaternion.Euler(0, 0, rotZ), new Vector3(1, 0.05f, 1)));
 		}
 	}
 
@@ -318,22 +330,6 @@ public class MazeGenerator : MonoBehaviour {
 			Debug.Log("Visualization mode enabled. Left click to disable, Right click to try again.");
 			sw.Stop();
 			visualize = true;
-		}
-	}
-
-	void CreatePath() {
-		foreach (var cell in cells) {
-			if (cell.wallsRemaining.HasFlag(GridDir.Left)) { CreateWall(cell.pos + Vector2.left * 0.5f, 90); }
-			if (cell.wallsRemaining.HasFlag(GridDir.Right)) { CreateWall(cell.pos + Vector2.right * 0.5f, 90); }
-			if (cell.wallsRemaining.HasFlag(GridDir.Up)) { CreateWall(cell.pos + Vector2.up * 0.5f, 0); }
-			if (cell.wallsRemaining.HasFlag(GridDir.Down)) { CreateWall(cell.pos + Vector2.down * 0.5f, 0); }
-		}
-
-		void CreateWall(Vector3 pos, float rotZ) {
-			var newCube = Instantiate(wallPrefab);
-			newCube.transform.position = pos;
-			newCube.transform.eulerAngles = new Vector3(0, 0, rotZ);
-			walls.Add(newCube);
 		}
 	}
 
