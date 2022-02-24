@@ -24,18 +24,18 @@ public class MazeCell {
 		}
 	}
 
-	public bool KnockdownWall(Vector2Int fromPos) {
-		var prevWalls = wallsRemaining;
-		wallsRemaining &= ~DirFromPos(fromPos);
-		return prevWalls == wallsRemaining;
-	}
+	public void KnockdownWall(Vector2Int fromPos) => wallsRemaining &= ~DirFromPos(fromPos);
 
 	public GridDir DirFromPos(Vector2Int fromPos) {
-		if (fromPos == pos + Vector2Int.right) { return GridDir.Right; }
-		else if (fromPos == pos + Vector2Int.left) { return GridDir.Left; }
-		else if (fromPos == pos + Vector2Int.up) { return GridDir.Up; }
-		else if (fromPos == pos + Vector2Int.down) { return GridDir.Down; }
-		else { Debug.LogWarning($"Weird wall connection {fromPos} --> {pos}"); }
-		return GridDir.None;
+		switch (fromPos) {
+			case Vector2Int _ when fromPos == pos + Vector2Int.right: { return GridDir.Right; }
+			case Vector2Int _ when fromPos == pos + Vector2Int.left: { return GridDir.Left; }
+			case Vector2Int _ when fromPos == pos + Vector2Int.up: { return GridDir.Up; }
+			case Vector2Int _ when fromPos == pos + Vector2Int.down: { return GridDir.Down; }
+			default: {
+				Debug.LogWarning($"Weird wall connection {fromPos} --> {pos}");
+				return GridDir.None;
+			}
+		}
 	}
 }
