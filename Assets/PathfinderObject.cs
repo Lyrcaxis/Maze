@@ -29,9 +29,9 @@ public class PathfinderObject : MonoBehaviour {
 	void OnDrawGizmos() {
 		if (path == null || path.Count == 0) { return; }
 
-		Color startColor = Color.red;
-		Color midColor = Color.yellow;
-		Color endColor = Color.blue;
+		var startColor = Color.red;
+		var midColor = Color.yellow;
+		var endColor = Color.blue;
 
 		for (int i = 1; i < path.Count; i++) {
 			Gizmos.color = GetColor(i);

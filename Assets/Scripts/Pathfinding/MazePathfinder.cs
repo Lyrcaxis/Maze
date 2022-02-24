@@ -55,7 +55,7 @@ public class MazePathfinder : MonoBehaviour {
 
 		foreach (var cell in cells) { cell.uncheckedDirsTemp = cell.dirsToCheckForPathfinding; }
 
-		List<MazeCell> path = new List<MazeCell>();
+		var path = new List<MazeCell>();
 		FollowPathRecursively(startCell, GridDir.None);
 		return path;
 

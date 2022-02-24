@@ -13,7 +13,7 @@ public class MazeGenerator : MonoBehaviour {
 
 	System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
-	MazeCell invalidCell = new MazeCell(new Vector2Int(-1, -1));
+	static MazeCell invalidCell { get; } = new MazeCell(new Vector2Int(-1, -1));
 
 	public static System.Action OnGenerationRequested;
 	public static System.Action OnMazeGenerated;
@@ -55,8 +55,8 @@ public class MazeGenerator : MonoBehaviour {
 		}
 
 		// Initialize entry and exit
-		MazeCell startCell = cells[0, 0];
-		MazeCell endCell = cells[gridSize - 1, gridSize - 1];
+		var startCell = cells[0, 0];
+		var endCell = cells[gridSize - 1, gridSize - 1];
 
 		if (Random.Range(0, 2) == 1) { startCell.wallsRemaining &= ~GridDir.Left; }
 		else { startCell.wallsRemaining &= ~GridDir.Down; }
@@ -81,7 +81,7 @@ public class MazeGenerator : MonoBehaviour {
 			CreatePath();
 		}
 		void CreatePath() {
-			List<Matrix4x4> matrices = new List<Matrix4x4>(cells.Length);
+			var matrices = new List<Matrix4x4>(cells.Length);
 
 			foreach (var cell in cells) {
 				if (cell.wallsRemaining.HasFlag(GridDir.Left)) { CreateWall(cell.pos + Vector2.left * 0.5f, 90); }
@@ -106,15 +106,14 @@ public class MazeGenerator : MonoBehaviour {
 			sw.Restart();
 		}
 	}
+
 	IEnumerator GenerateCorrectPath(MazeCell startCell, MazeCell endCell, System.Action Callback) {
 		sw.Start();
 
-		List<MazeCell> mazePath = new List<MazeCell>();
+		var mazePath = new List<MazeCell>() { startCell.withResettedUncheckedDirs };
 
-		mazePath.Add(startCell.withResettedUncheckedDirs);
-
-		Vector2Int checkPos = mazePath[0].pos;
-		MazeCell checkingPoint = mazePath[0];
+		var checkPos = mazePath[0].pos;
+		var checkingPoint = mazePath[0];
 
 		while (checkingPoint.pos != endCell.pos) {
 			if (visualize) {
@@ -129,7 +128,7 @@ public class MazeGenerator : MonoBehaviour {
 			if (nb == invalidCell) { continue; }
 			if (nb == null) { mazePath.Remove(checkingPoint); }
 			else {
-				Vector2Int nbPos = nb.pos;
+				var nbPos = nb.pos;
 				if (mazePath.Any(x => x.pos == nbPos)) { continue; }
 				if (nb.pos.x == gridSize - 1 && nb.pos.y < checkingPoint.pos.y) { continue; }
 				if (nb.pos.y == gridSize - 1 && nb.pos.x < checkingPoint.pos.x) { continue; }
@@ -156,7 +155,7 @@ public class MazeGenerator : MonoBehaviour {
 		var visitedPoints = correctPath.Count;
 		var totalPoints = cells.Length;
 		var pathCopied = correctPath.Copy();
-		List<MazeCell> uncheckedPoints = new List<MazeCell>();
+		var uncheckedPoints = new List<MazeCell>();
 
 		MazeCell checkingPoint = null;
 		while (true) {
@@ -208,7 +207,7 @@ public class MazeGenerator : MonoBehaviour {
 		}
 
 		// Connect all unconnected cells
-		List<MazeCell> unconnectedCells = new List<MazeCell>();
+		var unconnectedCells = new List<MazeCell>();
 		foreach (var c in cells) { if (!c.hasBeenVisited) { unconnectedCells.Add(c); } }
 		foreach (var c in unconnectedCells) {
 			checkingPoint = c.withResettedUncheckedDirs;
@@ -222,7 +221,6 @@ public class MazeGenerator : MonoBehaviour {
 
 				if (nb == invalidCell) { continue; }
 				if (nb == null) { break; }
-				int wallsRemaining = Extensions.NumberOfSetBits((int) checkingPoint.wallsRemaining);
 				if (Extensions.NumberOfSetBits((int) nb.wallsRemaining) <= 2 && checkingPoint.wallsRemaining != GridDir.All) { continue; }
 
 				nb.KnockdownWall(checkingPoint.pos);
@@ -309,7 +307,7 @@ public class MazeGenerator : MonoBehaviour {
 			}
 		}
 		MazeCell GetNeighbor(MazeCell cell, GridDir dir) {
-			Vector2Int pos = GetPos();
+			var pos = GetPos();
 			cell.uncheckedDirsTemp &= ~dir;
 
 			if (pos.x < 0) { return invalidCell; }
@@ -339,7 +337,7 @@ public class MazeGenerator : MonoBehaviour {
 	void OnDrawGizmos() {
 		if (cells == null || !visualize) { return; }
 
-		Vector3 size = Vector3.one * 0.25f;
+		var size = Vector3.one * 0.25f;
 
 		foreach (var cell in cells) {
 			// Draw cell

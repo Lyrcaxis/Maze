@@ -12,7 +12,7 @@ public class WallsRenderer : MonoBehaviour {
 	}
 
 	public static void Init(List<Matrix4x4> matrices) {
-		List<List<Matrix4x4>> mLists = new List<List<Matrix4x4>>();
+		var mLists = new List<List<Matrix4x4>>();
 
 		int mListsAmount = matrices.Count / 1023; // 1023 is the max amount of matrices supported by DrawMeshInstanced
 		for (int i = 0; i <= mListsAmount; i++) { mLists.Add(new List<Matrix4x4>()); }
